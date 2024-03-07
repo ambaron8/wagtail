@@ -869,6 +869,17 @@ class TestRenditions(TestCase):
         rendition1 = self.image.get_rendition("min-120x120")
         self.assertIsInstance(rendition1.image.file.storage, DefaultStorage)
 
+        # when setting is set to an alias
+        custom_storages_setting = settings.STORAGES
+        custom_storages_setting["custom_storage_alias"] = {
+            "BACKEND": "wagtail.images.tests.test_models.CustomStorage",
+        }
+
+        with self.settings(STORAGES=custom_storages_setting):
+            setattr(settings, "WAGTAILIMAGES_RENDITION_STORAGE", "custom_storage_alias")
+            backend = get_rendition_storage()
+            self.assertIsInstance(backend, CustomStorage)
+
         # when setting is set to a path
         setattr(
             settings,
