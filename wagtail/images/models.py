@@ -128,8 +128,22 @@ def get_rendition_storage():
     """
     storage = getattr(settings, "WAGTAILIMAGES_RENDITION_STORAGE", default_storage)
     if isinstance(storage, str):
-        module = import_string(storage)
-        storage = module()
+        try:
+            from django.core.files.storage import storages, InvalidStorageError
+
+            try:
+                # First see if the string is a storage alias
+                storage = storages[storage]
+            except InvalidStorageError:
+                # Otherwise treat the string as a dotted path
+                module = import_string(storage)
+                storage = module()
+
+        except ImportError:
+            # DJANGO_VERSION < 4.2
+            module = import_string(storage)
+            storage = module()
+
     return storage
 
 
