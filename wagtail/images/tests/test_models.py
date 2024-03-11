@@ -1,10 +1,11 @@
 import unittest
 
+import django
 from django.conf import settings
 from django.contrib.auth.models import Group, Permission
 from django.core.cache import caches
 from django.core.files import File
-from django.core.files.storage import Storage, default_storage, storages
+from django.core.files.storage import Storage, default_storage
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.models import Prefetch
 from django.db.utils import IntegrityError
@@ -868,6 +869,7 @@ class TestRenditions(TestCase):
             get_rendition_storage(), settings.WAGTAILIMAGES_RENDITION_STORAGE
         )
 
+    @unittest.skipIf(django.VERSION < (4, 2), "Django 4.2+ required")
     @override_settings(
         STORAGES={
             "default": {
@@ -883,6 +885,8 @@ class TestRenditions(TestCase):
         WAGTAILIMAGES_RENDITION_STORAGE="custom_storage",
     )
     def test_rendition_storage_setting_given_storage_alias(self):
+        from django.core.files.storage import storages
+
         self.assertEqual(
             get_rendition_storage(), storages[settings.WAGTAILIMAGES_RENDITION_STORAGE]
         )
